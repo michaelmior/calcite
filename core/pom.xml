@@ -416,7 +416,8 @@ limitations under the License.
       the same contents -->
       <id>generate-version-properties</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
+        <file><missing>target/classes/org-apache-calcite-jdbc.properties</missing></file>
       </activation>
       <build>
         <resources>
@@ -434,7 +435,8 @@ limitations under the License.
       -->
       <id>generate-parser</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
+        <file><missing>target/generated-sources/fmpp/javacc/Parser.jj</missing></file>
       </activation>
       <build>
         <plugins>
