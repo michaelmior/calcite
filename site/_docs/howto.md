@@ -71,7 +71,9 @@ The test suite will run by default when you build, unless you specify
 `-DskipTests`:
 
 {% highlight bash %}
-$ mvn -DskipTests clean install
+# Note: "mvn clean install" does not work; use "mvn clean" then "mvn install"
+$ mvn clean
+$ mvn -DskipTests install
 $ mvn test
 {% endhighlight %}
 
