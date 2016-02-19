@@ -27,6 +27,8 @@ branches:
     - javadoc
     - /^branch-.*$/
     - /^[0-9]+-.*$/
+env:
+  - MAVEN_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 script:
   mvn -Dsurefire.useFile=false javadoc:javadoc test site
 git:
