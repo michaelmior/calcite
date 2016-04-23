@@ -116,7 +116,7 @@ public class CassandraTable extends AbstractQueryableTable
         new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     final RelDataType rowType = protoRowType.apply(typeFactory);
-    for (Map.Entry<String, String> field : selectFields) {
+    for (Map.Entry<String, Class> field : fields) {
       String fieldName = field.getKey();
       SqlTypeName typeName = rowType.getField(fieldName, true, false).getType().getSqlTypeName();
       fieldInfo.add(fieldName, typeFactory.createSqlType(typeName)).nullable(true);
@@ -125,7 +125,7 @@ public class CassandraTable extends AbstractQueryableTable
 
     // Construct the list of fields to project
     final String selectString;
-    if (fields.isEmpty()) {
+    if (selectFields.isEmpty()) {
       selectString = "*";
     } else {
       selectString = Util.toString(new Iterable<String>() {
