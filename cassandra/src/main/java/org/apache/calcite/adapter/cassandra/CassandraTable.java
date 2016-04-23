@@ -97,8 +97,8 @@ public class CassandraTable extends AbstractQueryableTable
 
   public Enumerable<Object> query(final Session session) {
     return query(session, Collections.<Map.Entry<String, Class>>emptyList(),
-        Collections.<String, String>emptyMap(), Collections.<String>emptyList(),
-        Collections.<String>emptyList(), null);
+        Collections.<Map.Entry<String, String>>emptyList(),
+        Collections.<String>emptyList(), Collections.<String>emptyList(), null);
   }
 
   /** Executes a CQL query on the underlying table.
@@ -109,14 +109,14 @@ public class CassandraTable extends AbstractQueryableTable
    * @return Enumerator of results
    */
   public Enumerable<Object> query(final Session session, List<Map.Entry<String, Class>> fields,
-        final Map<String, String> selectFields, List<String> predicates,
+        final List<Map.Entry<String, String>> selectFields, List<String> predicates,
         List<String> order, String limit) {
     // Build the type of the resulting row based on the provided fields
     final RelDataTypeFactory typeFactory =
         new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     final RelDataType rowType = protoRowType.apply(typeFactory);
-    for (Map.Entry<String, String> field : selectFields.entrySet()) {
+    for (Map.Entry<String, String> field : selectFields) {
       String fieldName = field.getKey();
       SqlTypeName typeName = rowType.getField(fieldName, true, false).getType().getSqlTypeName();
       fieldInfo.add(fieldName, typeFactory.createSqlType(typeName)).nullable(true);
@@ -131,7 +131,7 @@ public class CassandraTable extends AbstractQueryableTable
       selectString = Util.toString(new Iterable<String>() {
         public Iterator<String> iterator() {
           final Iterator<Map.Entry<String, String>> selectIterator =
-              selectFields.entrySet().iterator();
+              selectFields.iterator();
 
           return new Iterator<String>() {
             public boolean hasNext() {
@@ -218,7 +218,7 @@ public class CassandraTable extends AbstractQueryableTable
      */
     @SuppressWarnings("UnusedDeclaration")
     public Enumerable<Object> query(List<Map.Entry<String, Class>> fields,
-        Map<String, String> selectFields, List<String> predicates,
+        List<Map.Entry<String, String>> selectFields, List<String> predicates,
         List<String> order, String limit) {
       return getTable().query(getSession(), fields, selectFields, predicates,
           order, limit);

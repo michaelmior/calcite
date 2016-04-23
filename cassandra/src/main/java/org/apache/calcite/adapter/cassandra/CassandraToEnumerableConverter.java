@@ -43,7 +43,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import java.util.AbstractList;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -94,8 +94,14 @@ public class CassandraToEnumerableConverter
                       }
                     }),
                 Pair.class));
-    final Expression selectFields = buildConstantMap(list, "selectFields",
-            cassandraImplementor.selectFields, LinkedHashMap.class);
+    List<Map.Entry<String, String>> selectList = new ArrayList<Map.Entry<String, String>>();
+    for (Map.Entry<String, String> entry
+            : Pair.zip(cassandraImplementor.selectFields.keySet(),
+                cassandraImplementor.selectFields.values())) {
+      selectList.add(entry);
+    }
+    final Expression selectFields =
+        list.append("selectFields", constantArrayList(selectList, Pair.class));
     final Expression table =
         list.append("table",
             cassandraImplementor.table.getExpression(
@@ -121,24 +127,6 @@ public class CassandraToEnumerableConverter
     list.add(
         Expressions.return_(null, enumerable));
     return implementor.result(physType, list.toBlock());
-  }
-
-  /**
-   * Construct a constant expression representing a map
-   */
-  private static <K, V> Expression buildConstantMap(BlockBuilder list,
-        String mapName, Map<K, V> values, Class clazz) {
-    Expression map = list.append(mapName, Expressions.new_(clazz), false);
-    for (Map.Entry<K, V> entry : values.entrySet()) {
-      list.add(
-          Expressions.statement(
-              Expressions.call(map,
-                  BuiltInMethod.MAP_PUT.method,
-                  Expressions.constant(entry.getKey()),
-                  Expressions.constant(entry.getValue()))));
-    }
-
-    return map;
   }
 
   /** E.g. {@code constantArrayList("x", "y")} returns
