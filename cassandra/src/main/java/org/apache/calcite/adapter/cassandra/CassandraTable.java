@@ -42,8 +42,8 @@ import org.apache.calcite.util.Util;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +97,8 @@ public class CassandraTable extends AbstractQueryableTable
 
   public Enumerable<Object> query(final Session session) {
     return query(session, Collections.<Map.Entry<String, Class>>emptyList(),
-        Collections.<String>emptyList(), Collections.<String>emptyList(), null);
+        Collections.<String, String>emptyMap(), Collections.<String>emptyList(),
+        Collections.<String>emptyList(), null);
   }
 
   /** Executes a CQL query on the underlying table.
@@ -108,27 +109,42 @@ public class CassandraTable extends AbstractQueryableTable
    * @return Enumerator of results
    */
   public Enumerable<Object> query(final Session session, List<Map.Entry<String, Class>> fields,
-        List<String> predicates, List<String> order, String limit) {
+        final Map<String, String> selectFields, List<String> predicates,
+        List<String> order, String limit) {
     // Build the type of the resulting row based on the provided fields
     final RelDataTypeFactory typeFactory =
         new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     final RelDataType rowType = protoRowType.apply(typeFactory);
-    List<String> fieldNames = new ArrayList<String>();
-    for (Map.Entry<String, Class> field : fields) {
+    for (Map.Entry<String, String> field : selectFields.entrySet()) {
       String fieldName = field.getKey();
-      fieldNames.add(fieldName);
       SqlTypeName typeName = rowType.getField(fieldName, true, false).getType().getSqlTypeName();
       fieldInfo.add(fieldName, typeFactory.createSqlType(typeName)).nullable(true);
     }
     final RelProtoDataType resultRowType = RelDataTypeImpl.proto(fieldInfo.build());
 
     // Construct the list of fields to project
-    final String selectFields;
+    final String selectString;
     if (fields.isEmpty()) {
-      selectFields = "*";
+      selectString = "*";
     } else {
-      selectFields = Util.toString(fieldNames, "", ", ", "");
+      selectString = Util.toString(new Iterable<String>() {
+        public Iterator<String> iterator() {
+          final Iterator<Map.Entry<String, String>> selectIterator =
+              selectFields.entrySet().iterator();
+
+          return new Iterator<String>() {
+            public boolean hasNext() {
+              return selectIterator.hasNext();
+            }
+
+            public String next() {
+              Map.Entry<String, String> entry = selectIterator.next();
+              return entry.getKey() + " AS " + entry.getValue();
+            }
+          };
+        }
+      }, "", ", ", "");
     }
 
     // Combine all predicates conjunctively
@@ -140,7 +156,7 @@ public class CassandraTable extends AbstractQueryableTable
 
     // Build and issue the query and return an Enumerator over the results
     StringBuilder queryBuilder = new StringBuilder("SELECT ");
-    queryBuilder.append(selectFields);
+    queryBuilder.append(selectString);
     queryBuilder.append(" FROM \"" + columnFamily + "\"");
     queryBuilder.append(whereClause);
     if (!order.isEmpty()) {
@@ -202,8 +218,10 @@ public class CassandraTable extends AbstractQueryableTable
      */
     @SuppressWarnings("UnusedDeclaration")
     public Enumerable<Object> query(List<Map.Entry<String, Class>> fields,
-        List<String> predicates, List<String> order, String limit) {
-      return getTable().query(getSession(), fields, predicates, order, limit);
+        Map<String, String> selectFields, List<String> predicates,
+        List<String> order, String limit) {
+      return getTable().query(getSession(), fields, selectFields, predicates,
+          order, limit);
     }
   }
 }

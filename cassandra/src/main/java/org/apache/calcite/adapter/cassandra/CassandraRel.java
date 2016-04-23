@@ -21,7 +21,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public interface CassandraRel extends RelNode {
   /** Callback for the implementation process that converts a tree of
    * {@link CassandraRel} nodes into a CQL query. */
   class Implementor {
-    final Map<String, String> selectFields = new HashMap<String, String>();
+    final Map<String, String> selectFields = new LinkedHashMap<String, String>();
     final List<String> whereClause = new ArrayList<String>();
     String limitValue = null;
     final List<String> order = new ArrayList<String>();

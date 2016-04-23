@@ -22,13 +22,14 @@ import com.google.common.collect.ImmutableMap;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Builtin methods in the Cassandra adapter.
  */
 public enum CassandraMethod {
   CASSANDRA_QUERYABLE_QUERY(CassandraTable.CassandraQueryable.class, "query",
-      List.class, List.class, List.class, String.class);
+      List.class, Map.class, List.class, List.class, String.class);
 
   public final Method method;
 

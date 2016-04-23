@@ -43,7 +43,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import java.util.AbstractList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Relational expression representing a scan of a table in a Cassandra data source.
@@ -92,6 +94,8 @@ public class CassandraToEnumerableConverter
                       }
                     }),
                 Pair.class));
+    final Expression selectFields = buildConstantMap(list, "selectFields",
+            cassandraImplementor.selectFields, LinkedHashMap.class);
     final Expression table =
         list.append("table",
             cassandraImplementor.table.getExpression(
@@ -109,7 +113,7 @@ public class CassandraToEnumerableConverter
         list.append("enumerable",
             Expressions.call(table,
                 CassandraMethod.CASSANDRA_QUERYABLE_QUERY.method, fields,
-                predicates, order, limit));
+                selectFields, predicates, order, limit));
     if (CalcitePrepareImpl.DEBUG) {
       System.out.println("Cassandra: " + predicates);
     }
@@ -117,6 +121,24 @@ public class CassandraToEnumerableConverter
     list.add(
         Expressions.return_(null, enumerable));
     return implementor.result(physType, list.toBlock());
+  }
+
+  /**
+   * Construct a constant expression representing a map
+   */
+  private static <K, V> Expression buildConstantMap(BlockBuilder list,
+        String mapName, Map<K, V> values, Class clazz) {
+    Expression map = list.append(mapName, Expressions.new_(clazz), false);
+    for (Map.Entry<K, V> entry : values.entrySet()) {
+      list.add(
+          Expressions.statement(
+              Expressions.call(map,
+                  BuiltInMethod.MAP_PUT.method,
+                  Expressions.constant(entry.getKey()),
+                  Expressions.constant(entry.getValue()))));
+    }
+
+    return map;
   }
 
   /** E.g. {@code constantArrayList("x", "y")} returns
