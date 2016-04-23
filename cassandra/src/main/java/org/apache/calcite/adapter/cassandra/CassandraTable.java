@@ -22,6 +22,7 @@ import org.apache.calcite.linq4j.Enumerable;
 import org.apache.calcite.linq4j.Enumerator;
 import org.apache.calcite.linq4j.QueryProvider;
 import org.apache.calcite.linq4j.Queryable;
+import org.apache.calcite.linq4j.function.Function1;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelFieldCollation;
@@ -116,11 +117,25 @@ public class CassandraTable extends AbstractQueryableTable
         new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     final RelDataType rowType = protoRowType.apply(typeFactory);
-    for (Map.Entry<String, Class> field : fields) {
-      String fieldName = field.getKey();
-      SqlTypeName typeName = rowType.getField(fieldName, true, false).getType().getSqlTypeName();
-      fieldInfo.add(fieldName, typeFactory.createSqlType(typeName)).nullable(true);
+
+    Function1<String, Void> addField = new Function1<String, Void>() {
+      public Void apply(String fieldName) {
+        SqlTypeName typeName = rowType.getField(fieldName, true, false).getType().getSqlTypeName();
+        fieldInfo.add(fieldName, typeFactory.createSqlType(typeName)).nullable(true);
+        return null;
+      }
+    };
+
+    if (selectFields.isEmpty()) {
+      for (Map.Entry<String, Class> field : fields) {
+        addField.apply(field.getKey());
+      }
+    } else {
+      for (Map.Entry<String, String> field : selectFields) {
+        addField.apply(field.getKey());
+      }
     }
+
     final RelProtoDataType resultRowType = RelDataTypeImpl.proto(fieldInfo.build());
 
     // Construct the list of fields to project
