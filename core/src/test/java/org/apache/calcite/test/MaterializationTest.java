@@ -873,6 +873,13 @@ public class MaterializationTest {
     checkMaterialize(m, q);
   }
 
+  @Test public void testJoinMaterialization3() {
+    String q = "select \"deptno\" from \"emps\" where \"empid\" = 1";
+    final String m = "select \"empid\" \"deptno\" from \"emps\"\n"
+            + "join \"depts\" using (\"deptno\")";
+    checkMaterialize(m, q);
+  }
+
   /** Test case for
    * <a href="https://issues.apache.org/jira/browse/CALCITE-761">[CALCITE-761]
    * Pre-populated materializations</a>. */
