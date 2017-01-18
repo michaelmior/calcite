@@ -40,7 +40,21 @@ By understanding some tables as materialized views, Calcite has the opportunity 
 
 ## View-based query rewriting
 
-While lattices can be used to rewrite queries based on star schemas, they cannot be used for more complex views.
+View-based query rewriting aims to take an input query which can be answered using a preexisting view and rewrite the query to make use of the view.
+Calcite employs two forms of view-based query rewriting.
+The first is based on view substitution before the planning phase based on an extension of a {SubstitutionVisitor}.
+{MaterializedViewSubstitutionVisitor} aims to substitute part of the relational algebra tree with an equivalent expression which makes use of a materialized view.
+
+The following example is taken from the documentation of {SubstitutionVisitor}:
+
+ * Query: `SELECT a, c FROM t WHERE x = 5 AND b = 4`
+ * Target (materialized view definition): `SELECT a, b, c FROM t WHERE x = 5`
+ * Replacement: `SELECT * FROM mv`
+ * Result: `SELECT a, c FROM mv WHERE b = 4`
+
+Note that {result} uses the materialized view table {mv} and a simplified condition {b = 4}.
+This can accomplish a large number of rewritings, but only those based on star schemas.
+This type of rewriting cannot be used for more complex views.
 {MaterializedViewJoinRule} attempts to match queries to views defined using arbitrary queries.
 The logic of the rule is based on [this paper](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.95.113).
 
