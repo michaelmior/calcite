@@ -42,7 +42,7 @@ By understanding some tables as materialized views, Calcite has the opportunity 
 
 While lattices can be used to rewrite queries based on star schemas, they cannot be used for more complex views.
 {MaterializedViewJoinRule} attempts to match queries to views defined using arbitrary queries.
-The logic of the rule is based on [this paper](http://dl.acm.org/citation.cfm?id=375706).
+The logic of the rule is based on [this paper](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.95.113).
 
 There are several limitations to the current implementation:
 
