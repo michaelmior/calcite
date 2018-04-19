@@ -36,6 +36,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.dialect.AnsiSqlDialect;
 import org.apache.calcite.sql.dialect.CalciteSqlDialect;
 import org.apache.calcite.sql.fun.OracleSqlOperatorTable;
+import org.apache.calcite.sql.fun.SqlJsonOperatorTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.pretty.SqlPrettyWriter;
@@ -7007,6 +7008,13 @@ public abstract class SqlOperatorBaseTest {
       }
     }
     return values;
+  }
+
+  @Test public void testIsJson() {
+    tester.setFor(SqlJsonOperatorTable.ISJSON);
+
+    // tester.checkBoolean("isjson('{}')", Boolean.TRUE);
+    tester.checkBoolean("isjson('{')", Boolean.FALSE);
   }
 
   // TODO: Test other stuff

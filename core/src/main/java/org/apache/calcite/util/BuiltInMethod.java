@@ -73,6 +73,7 @@ import org.apache.calcite.runtime.BinarySearch;
 import org.apache.calcite.runtime.Bindable;
 import org.apache.calcite.runtime.Enumerables;
 import org.apache.calcite.runtime.FlatLists;
+import org.apache.calcite.runtime.JsonFunctions;
 import org.apache.calcite.runtime.RandomFunction;
 import org.apache.calcite.runtime.ResultSetEnumerable;
 import org.apache.calcite.runtime.SortedMultiMap;
@@ -248,6 +249,7 @@ public enum BuiltInMethod {
   ARRAY_ITEM(SqlFunctions.class, "arrayItemOptional", List.class, int.class),
   MAP_ITEM(SqlFunctions.class, "mapItemOptional", Map.class, Object.class),
   ANY_ITEM(SqlFunctions.class, "itemOptional", Object.class, Object.class),
+  ISJSON(JsonFunctions.class, "isJson", String.class),
   UPPER(SqlFunctions.class, "upper", String.class),
   LOWER(SqlFunctions.class, "lower", String.class),
   INITCAP(SqlFunctions.class, "initcap", String.class),

@@ -91,6 +91,7 @@ import static org.apache.calcite.linq4j.tree.ExpressionType.OrElse;
 import static org.apache.calcite.linq4j.tree.ExpressionType.Subtract;
 import static org.apache.calcite.linq4j.tree.ExpressionType.UnaryPlus;
 import static org.apache.calcite.sql.fun.OracleSqlOperatorTable.TRANSLATE3;
+import static org.apache.calcite.sql.fun.SqlJsonOperatorTable.ISJSON;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.ABS;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.ACOS;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.AND;
@@ -430,6 +431,9 @@ public class RexImpTable {
     winAggMap.put(LAG, constructorSupplier(LagImplementor.class));
     winAggMap.put(NTILE, constructorSupplier(NtileImplementor.class));
     winAggMap.put(COUNT, constructorSupplier(CountWinImplementor.class));
+
+    // JSON functions
+    defineMethod(ISJSON, BuiltInMethod.ISJSON.method, NullPolicy.STRICT);
   }
 
   private <T> Supplier<T> constructorSupplier(Class<T> klass) {

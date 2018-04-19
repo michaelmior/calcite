@@ -23,8 +23,10 @@ import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.SqlOperatorTable;
 import org.apache.calcite.sql.advise.SqlAdvisor;
+import org.apache.calcite.sql.fun.SqlJsonOperatorTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.util.ChainedSqlOperatorTable;
 import org.apache.calcite.sql.validate.SqlConformance;
 import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.sql.validate.SqlValidator;
@@ -58,7 +60,10 @@ public class DefaultSqlTestFactory implements SqlTestFactory {
           .put("unquotedCasing", Casing.TO_UPPER)
           .put("caseSensitive", true)
           .put("conformance", SqlConformanceEnum.DEFAULT)
-          .put("operatorTable", SqlStdOperatorTable.instance())
+          .put("operatorTable",
+              ChainedSqlOperatorTable.of(
+                  SqlStdOperatorTable.instance(),
+                  SqlJsonOperatorTable.instance()))
           .put("connectionFactory",
               CalciteAssert.EMPTY_CONNECTION_FACTORY
                   .with(

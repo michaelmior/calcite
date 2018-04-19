@@ -120,6 +120,7 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlOperatorTable;
 import org.apache.calcite.sql.SqlUtil;
+import org.apache.calcite.sql.fun.SqlJsonOperatorTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
@@ -853,8 +854,11 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     final SqlOperatorTable opTab0 =
         context.config().fun(SqlOperatorTable.class,
             SqlStdOperatorTable.instance());
+    final SqlOperatorTable opTab1 =
+        context.config().fun(SqlOperatorTable.class,
+            SqlJsonOperatorTable.instance());
     final SqlOperatorTable opTab =
-        ChainedSqlOperatorTable.of(opTab0, catalogReader);
+        ChainedSqlOperatorTable.of(opTab0, opTab1, catalogReader);
     final JavaTypeFactory typeFactory = context.getTypeFactory();
     final SqlConformance conformance = context.config().conformance();
     return new CalciteSqlValidator(opTab, catalogReader, typeFactory,

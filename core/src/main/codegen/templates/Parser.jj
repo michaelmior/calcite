@@ -5145,6 +5145,7 @@ SqlIdentifier ReservedFunctionName() :
     |   <FUSION>
     |   <GROUPING>
     |   <HOUR>
+    |   <ISJSON>
     |   <LAG>
     |   <LEAD>
     |   <LAST_VALUE>
@@ -5699,6 +5700,7 @@ SqlPostfixOperator PostfixRowOperator() :
 |   < INTO: "INTO" >
 |   < INVOKER: "INVOKER" >
 |   < IS: "IS" >
+|   < ISJSON: "ISJSON" >
 |   < ISOLATION: "ISOLATION" >
 |   < JAVA: "JAVA" >
 |   < JOIN: "JOIN" >
