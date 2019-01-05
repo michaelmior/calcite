@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexFieldAccess;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSlot;
@@ -365,17 +366,7 @@ public class RelJson {
       }
       final Integer input = (Integer) map.get("input");
       if (input != null) {
-        List<RelNode> inputNodes = relInput.getInputs();
-        int i = input;
-        for (RelNode inputNode : inputNodes) {
-          final RelDataType rowType = inputNode.getRowType();
-          if (i < rowType.getFieldCount()) {
-            final RelDataTypeField field = rowType.getFieldList().get(i);
-            return rexBuilder.makeInputRef(field.getType(), input);
-          }
-          i -= rowType.getFieldCount();
-        }
-        throw new RuntimeException("input field " + input + " is out of range");
+        return toRexInputRef(relInput, o);
       }
       final String field = (String) map.get("field");
       if (field != null) {
@@ -413,6 +404,26 @@ public class RelJson {
         return rexBuilder.makeExactLiteral(
             BigDecimal.valueOf(number.longValue()));
       }
+    } else {
+      throw new UnsupportedOperationException("cannot convert to rex " + o);
+    }
+  }
+
+  RexInputRef toRexInputRef(RelInput relInput, Object o) {
+    Map map = (Map) o;
+    final Integer input = (Integer) map.get("input");
+    if (input != null) {
+      List<RelNode> inputNodes = relInput.getInputs();
+      int i = input;
+      for (RelNode inputNode : inputNodes) {
+        final RelDataType rowType = inputNode.getRowType();
+        if (i < rowType.getFieldCount()) {
+          final RelDataTypeField field = rowType.getFieldList().get(i);
+          return relInput.getCluster().getRexBuilder().makeInputRef(field.getType(), input);
+        }
+        i -= rowType.getFieldCount();
+      }
+      throw new RuntimeException("input field " + input + " is out of range");
     } else {
       throw new UnsupportedOperationException("cannot convert to rex " + o);
     }

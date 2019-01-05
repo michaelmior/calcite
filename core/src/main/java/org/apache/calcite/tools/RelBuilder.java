@@ -142,6 +142,7 @@ public class RelBuilder {
   private final RelFactories.CorrelateFactory correlateFactory;
   private final RelFactories.ValuesFactory valuesFactory;
   private final RelFactories.TableScanFactory scanFactory;
+  private final RelFactories.UnwindFactory unwindFactory;
   private final RelFactories.MatchFactory matchFactory;
   private final Deque<Frame> stack = new ArrayDeque<>();
   private final boolean simplify;
@@ -191,6 +192,9 @@ public class RelBuilder {
     this.scanFactory =
         Util.first(context.unwrap(RelFactories.TableScanFactory.class),
             RelFactories.DEFAULT_TABLE_SCAN_FACTORY);
+    this.unwindFactory =
+        Util.first(context.unwrap(RelFactories.UnwindFactory.class),
+            RelFactories.DEFAULT_UNWIND_FACTORY);
     this.matchFactory =
         Util.first(context.unwrap(RelFactories.MatchFactory.class),
             RelFactories.DEFAULT_MATCH_FACTORY);
@@ -2028,6 +2032,18 @@ public class RelBuilder {
       return new RelFieldCollation(fieldIndex, direction,
           Util.first(nullDirection, direction.defaultNullDirection()));
     }
+  }
+
+  /** Creates an {@link Unwind} of the inputs. */
+  public RelBuilder unwind(RexInputRef... inputs) {
+    return sort(ImmutableList.copyOf(inputs));
+  }
+
+  /** Creates an {@link Unwind} of the inputs. */
+  public RelBuilder unwind(List<RexInputRef> inputs) {
+    final RelNode unwind = unwindFactory.createUnwind(peek(), inputs);
+    replaceTop(unwind);
+    return this;
   }
 
   /**

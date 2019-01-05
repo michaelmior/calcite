@@ -28,6 +28,7 @@ import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.Schema;
@@ -130,6 +131,10 @@ public class RelJsonReader {
         return relJson.toRex(this, jsonRel.get(tag));
       }
 
+      public RexInputRef getInput(String tag) {
+        return relJson.toRexInputRef(this, jsonRel.get(tag));
+      }
+
       public ImmutableBitSet getBitSet(String tag) {
         return ImmutableBitSet.of(getIntegerList(tag));
       }
@@ -202,6 +207,16 @@ public class RelJsonReader {
           nodes.add(relJson.toRex(this, jsonNode));
         }
         return nodes;
+      }
+
+      public List<RexInputRef> getInputList(String tag) {
+        @SuppressWarnings("unchecked")
+        final List<Object> jsonNodes = (List) jsonRel.get(tag);
+        final List<RexInputRef> inputs = new ArrayList<>();
+        for (Object jsonNode : jsonNodes) {
+          inputs.add(relJson.toRexInputRef(this, jsonNode));
+        }
+        return inputs;
       }
 
       public RelDataType getRowType(String tag) {

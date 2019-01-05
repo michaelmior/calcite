@@ -16,6 +16,7 @@
  */
 package org.apache.calcite.rel.metadata;
 
+import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
@@ -27,6 +28,8 @@ import org.apache.calcite.rel.core.Minus;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -42,6 +45,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.NumberUtil;
 
 import com.google.common.base.Preconditions;
@@ -66,6 +70,9 @@ public class RelMdUtil {
           null,
           OperandTypes.NUMERIC, // takes a numeric param
           SqlFunctionCategory.SYSTEM);
+
+  /** Bytes per character (2). */
+  public static final int BYTES_PER_CHARACTER = Character.SIZE / Byte.SIZE;
 
   //~ Methods ----------------------------------------------------------------
 
@@ -816,6 +823,124 @@ public class RelMdUtil {
       }
     }
     return alreadySorted && alreadySmaller;
+  }
+
+  /** Estimates the average size (in bytes) of a value of a field, knowing
+   * nothing more than its type.
+   *
+   * <p>We assume that the proportion of nulls is negligible, even if the field
+   * is nullable.
+   */
+  public static Double averageFieldValueSize(RelDataTypeField field) {
+    return RelMdUtil.averageTypeValueSize(field.getType());
+  }
+
+  /** Estimates the average size (in bytes) of a value of a type.
+   *
+   * <p>We assume that the proportion of nulls is negligible, even if the type
+   * is nullable.
+   */
+  public static Double averageTypeValueSize(RelDataType type) {
+    switch (type.getSqlTypeName()) {
+    case BOOLEAN:
+    case TINYINT:
+      return 1d;
+    case SMALLINT:
+      return 2d;
+    case INTEGER:
+    case REAL:
+    case DECIMAL:
+    case DATE:
+    case TIME:
+    case TIME_WITH_LOCAL_TIME_ZONE:
+    case INTERVAL_YEAR:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_MONTH:
+      return 4d;
+    case BIGINT:
+    case DOUBLE:
+    case FLOAT: // sic
+    case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND:
+      return 8d;
+    case BINARY:
+      return (double) type.getPrecision();
+    case VARBINARY:
+      return Math.min((double) type.getPrecision(), 100d);
+    case CHAR:
+      return (double) type.getPrecision() * BYTES_PER_CHARACTER;
+    case VARCHAR:
+      // Even in large (say VARCHAR(2000)) columns most strings are small
+      return Math.min((double) type.getPrecision() * BYTES_PER_CHARACTER, 100d);
+    case ROW:
+      double average = 0.0;
+      for (RelDataTypeField field : type.getFieldList()) {
+        average += RelMdUtil.averageTypeValueSize(field.getType());
+      }
+      return average;
+    default:
+      return null;
+    }
+  }
+
+  /** Estimates the average size (in bytes) of a value of a type.
+   *
+   * <p>Nulls count as 1 byte.
+   */
+  public static double typeValueSize(RelDataType type, Comparable value) {
+    if (value == null) {
+      return 1d;
+    }
+    switch (type.getSqlTypeName()) {
+    case BOOLEAN:
+    case TINYINT:
+      return 1d;
+    case SMALLINT:
+      return 2d;
+    case INTEGER:
+    case FLOAT:
+    case REAL:
+    case DATE:
+    case TIME:
+    case TIME_WITH_LOCAL_TIME_ZONE:
+    case INTERVAL_YEAR:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_MONTH:
+      return 4d;
+    case BIGINT:
+    case DOUBLE:
+    case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND:
+      return 8d;
+    case BINARY:
+    case VARBINARY:
+      return ((ByteString) value).length();
+    case CHAR:
+    case VARCHAR:
+      return ((NlsString) value).getValue().length() * BYTES_PER_CHARACTER;
+    default:
+      return 32;
+    }
   }
 }
 

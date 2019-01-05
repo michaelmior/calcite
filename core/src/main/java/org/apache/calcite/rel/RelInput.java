@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -53,6 +54,8 @@ public interface RelInput {
    */
   RexNode getExpression(String tag);
 
+  RexInputRef getInput(String tag);
+
   ImmutableBitSet getBitSet(String tag);
 
   List<ImmutableBitSet> getBitSetList(String tag);
@@ -77,6 +80,8 @@ public interface RelInput {
   <E extends Enum<E>> E getEnum(String tag, Class<E> enumClass);
 
   List<RexNode> getExpressionList(String tag);
+
+  List<RexInputRef> getInputList(String tag);
 
   List<String> getStringList(String tag);
 

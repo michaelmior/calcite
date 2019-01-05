@@ -37,8 +37,10 @@ import org.apache.calcite.rel.logical.LogicalSort;
 import org.apache.calcite.rel.logical.LogicalSortExchange;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.logical.LogicalUnion;
+import org.apache.calcite.rel.logical.LogicalUnwind;
 import org.apache.calcite.rel.logical.LogicalValues;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.TranslatableTable;
@@ -99,6 +101,9 @@ public class RelFactories {
   public static final TableScanFactory DEFAULT_TABLE_SCAN_FACTORY =
       new TableScanFactoryImpl();
 
+  public static final UnwindFactory DEFAULT_UNWIND_FACTORY =
+      new UnwindFactoryImpl();
+
   /** A {@link RelBuilderFactory} that creates a {@link RelBuilder} that will
    * create logical relational expressions for everything. */
   public static final RelBuilderFactory LOGICAL_BUILDER =
@@ -114,7 +119,8 @@ public class RelFactories {
               DEFAULT_MATCH_FACTORY,
               DEFAULT_SET_OP_FACTORY,
               DEFAULT_VALUES_FACTORY,
-              DEFAULT_TABLE_SCAN_FACTORY));
+              DEFAULT_TABLE_SCAN_FACTORY,
+              DEFAULT_UNWIND_FACTORY));
 
   private RelFactories() {
   }
@@ -491,6 +497,27 @@ public class RelFactories {
       }
       return tableScanFactory.createScan(cluster, table);
     };
+  }
+
+  /**
+   * Can create an {@link Unwind} of the appropriate type
+   * for a rule's calling convention.
+   */
+  public interface UnwindFactory {
+    /**
+     * Creates an {@link Unwind}.
+     */
+    RelNode createUnwind(RelNode child, List<RexInputRef> inputs);
+  }
+
+  /**
+   * Implementation of {@link UnwindFactory} that returns a
+   * {@link LogicalUnwind}.
+   */
+  private static class UnwindFactoryImpl implements UnwindFactory {
+    public RelNode createUnwind(RelNode child, List<RexInputRef> inputs) {
+      return LogicalUnwind.create(child, inputs);
+    }
   }
 
   /**

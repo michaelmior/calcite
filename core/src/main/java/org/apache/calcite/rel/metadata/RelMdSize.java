@@ -16,7 +16,6 @@
  */
 package org.apache.calcite.rel.metadata;
 
-import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -31,7 +30,6 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -39,7 +37,6 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableNullableList;
-import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.Pair;
 
 import com.google.common.collect.ImmutableList;
@@ -63,9 +60,6 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
       ReflectiveRelMetadataProvider.reflectiveSource(new RelMdSize(),
           BuiltInMethod.AVERAGE_COLUMN_SIZES.method,
           BuiltInMethod.AVERAGE_ROW_SIZE.method);
-
-  /** Bytes per character (2). */
-  public static final int BYTES_PER_CHARACTER = Character.SIZE / Byte.SIZE;
 
   //~ Constructors -----------------------------------------------------------
 
@@ -93,7 +87,7 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
     for (Pair<Double, RelDataTypeField> p
         : Pair.zip(averageColumnSizes, fields)) {
       if (p.left == null) {
-        d += averageFieldValueSize(p.right);
+        d += RelMdUtil.averageFieldValueSize(p.right);
       } else {
         d += p.left;
       }
@@ -141,11 +135,11 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
       RelDataTypeField field = fields.get(i);
       double d;
       if (rel.getTuples().isEmpty()) {
-        d = averageTypeValueSize(field.getType());
+        d = RelMdUtil.averageTypeValueSize(field.getType());
       } else {
         d = 0;
         for (ImmutableList<RexLiteral> literals : rel.getTuples()) {
-          d += typeValueSize(field.getType(),
+          d += RelMdUtil.typeValueSize(field.getType(),
               literals.get(i).getValueAs(Comparable.class));
         }
         d /= rel.getTuples().size();
@@ -159,7 +153,7 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
     final List<RelDataTypeField> fields = rel.getRowType().getFieldList();
     final ImmutableList.Builder<Double> list = ImmutableList.builder();
     for (RelDataTypeField field : fields) {
-      list.add(averageTypeValueSize(field.getType()));
+      list.add(RelMdUtil.averageTypeValueSize(field.getType()));
     }
     return list.build();
   }
@@ -172,7 +166,7 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
       list.add(inputColumnSizes.get(key));
     }
     for (AggregateCall aggregateCall : rel.getAggCallList()) {
-      list.add(averageTypeValueSize(aggregateCall.type));
+      list.add(RelMdUtil.averageTypeValueSize(aggregateCall.type));
     }
     return list.build();
   }
@@ -254,130 +248,12 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
     return sizes.build();
   }
 
-  /** Estimates the average size (in bytes) of a value of a field, knowing
-   * nothing more than its type.
-   *
-   * <p>We assume that the proportion of nulls is negligible, even if the field
-   * is nullable.
-   */
-  protected Double averageFieldValueSize(RelDataTypeField field) {
-    return averageTypeValueSize(field.getType());
-  }
-
-  /** Estimates the average size (in bytes) of a value of a type.
-   *
-   * <p>We assume that the proportion of nulls is negligible, even if the type
-   * is nullable.
-   */
-  public Double averageTypeValueSize(RelDataType type) {
-    switch (type.getSqlTypeName()) {
-    case BOOLEAN:
-    case TINYINT:
-      return 1d;
-    case SMALLINT:
-      return 2d;
-    case INTEGER:
-    case REAL:
-    case DECIMAL:
-    case DATE:
-    case TIME:
-    case TIME_WITH_LOCAL_TIME_ZONE:
-    case INTERVAL_YEAR:
-    case INTERVAL_YEAR_MONTH:
-    case INTERVAL_MONTH:
-      return 4d;
-    case BIGINT:
-    case DOUBLE:
-    case FLOAT: // sic
-    case TIMESTAMP:
-    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-    case INTERVAL_DAY:
-    case INTERVAL_DAY_HOUR:
-    case INTERVAL_DAY_MINUTE:
-    case INTERVAL_DAY_SECOND:
-    case INTERVAL_HOUR:
-    case INTERVAL_HOUR_MINUTE:
-    case INTERVAL_HOUR_SECOND:
-    case INTERVAL_MINUTE:
-    case INTERVAL_MINUTE_SECOND:
-    case INTERVAL_SECOND:
-      return 8d;
-    case BINARY:
-      return (double) type.getPrecision();
-    case VARBINARY:
-      return Math.min((double) type.getPrecision(), 100d);
-    case CHAR:
-      return (double) type.getPrecision() * BYTES_PER_CHARACTER;
-    case VARCHAR:
-      // Even in large (say VARCHAR(2000)) columns most strings are small
-      return Math.min((double) type.getPrecision() * BYTES_PER_CHARACTER, 100d);
-    case ROW:
-      double average = 0.0;
-      for (RelDataTypeField field : type.getFieldList()) {
-        average += averageTypeValueSize(field.getType());
-      }
-      return average;
-    default:
-      return null;
-    }
-  }
-
-  /** Estimates the average size (in bytes) of a value of a type.
-   *
-   * <p>Nulls count as 1 byte.
-   */
-  public double typeValueSize(RelDataType type, Comparable value) {
-    if (value == null) {
-      return 1d;
-    }
-    switch (type.getSqlTypeName()) {
-    case BOOLEAN:
-    case TINYINT:
-      return 1d;
-    case SMALLINT:
-      return 2d;
-    case INTEGER:
-    case FLOAT:
-    case REAL:
-    case DATE:
-    case TIME:
-    case TIME_WITH_LOCAL_TIME_ZONE:
-    case INTERVAL_YEAR:
-    case INTERVAL_YEAR_MONTH:
-    case INTERVAL_MONTH:
-      return 4d;
-    case BIGINT:
-    case DOUBLE:
-    case TIMESTAMP:
-    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-    case INTERVAL_DAY:
-    case INTERVAL_DAY_HOUR:
-    case INTERVAL_DAY_MINUTE:
-    case INTERVAL_DAY_SECOND:
-    case INTERVAL_HOUR:
-    case INTERVAL_HOUR_MINUTE:
-    case INTERVAL_HOUR_SECOND:
-    case INTERVAL_MINUTE:
-    case INTERVAL_MINUTE_SECOND:
-    case INTERVAL_SECOND:
-      return 8d;
-    case BINARY:
-    case VARBINARY:
-      return ((ByteString) value).length();
-    case CHAR:
-    case VARCHAR:
-      return ((NlsString) value).getValue().length() * BYTES_PER_CHARACTER;
-    default:
-      return 32;
-    }
-  }
-
   public Double averageRexSize(RexNode node, List<Double> inputColumnSizes) {
     switch (node.getKind()) {
     case INPUT_REF:
       return inputColumnSizes.get(((RexInputRef) node).getIndex());
     case LITERAL:
-      return typeValueSize(node.getType(),
+      return RelMdUtil.typeValueSize(node.getType(),
           ((RexLiteral) node).getValueAs(Comparable.class));
     default:
       if (node instanceof RexCall) {
@@ -392,7 +268,7 @@ public class RelMdSize implements MetadataHandler<BuiltInMetadata.Size> {
           }
         }
       }
-      return averageTypeValueSize(node.getType());
+      return RelMdUtil.averageTypeValueSize(node.getType());
     }
   }
 }
