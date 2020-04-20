@@ -46,6 +46,7 @@ dependencies {
         // In other words, marking dependency as "runtime" would avoid accidental
         // dependency on it during compilation
         apiv("com.beust:jcommander")
+        apiv("org.checkerframework:checker-qual", "checkerframework")
         apiv("com.datastax.cassandra:cassandra-driver-core")
         apiv("com.esri.geometry:esri-geometry-api")
         apiv("com.fasterxml.jackson.core:jackson-annotations", "jackson")

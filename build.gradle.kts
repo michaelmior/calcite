@@ -33,6 +33,7 @@ plugins {
     // Verification
     checkstyle
     calcite.buildext
+    id("org.checkerframework") apply false
     id("com.github.autostyle")
     id("org.nosphere.apache.rat")
     id("com.github.spotbugs")
@@ -63,6 +64,7 @@ val enableSpotBugs = props.bool("spotbugs")
 val skipCheckstyle by props()
 val skipAutostyle by props()
 val skipJavadoc by props()
+val enableCheckerframework by props()
 val enableMavenLocal by props()
 val enableGradleMetadata by props()
 // Inherited from stage-vote-release-plugin: skipSign, useGpgCmd
@@ -493,6 +495,30 @@ allprojects {
                 )
             )
             signaturesFiles = files("$rootDir/src/main/config/forbidden-apis/signatures.txt")
+        }
+
+        if (enableCheckerframework) {
+            apply(plugin = "org.checkerframework")
+            dependencies {
+                "checkerFramework"("org.checkerframework:checker:${"checkerframework".v}")
+                // CheckerFramework annotations might be used in the code as follows:
+                // dependencies {
+                //     "compileOnly"("org.checkerframework:checker-qual")
+                //     "testCompileOnly"("org.checkerframework:checker-qual")
+                // }
+                if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+                    // only needed for JDK 8
+                    "checkerFrameworkAnnotatedJDK"("org.checkerframework:jdk8")
+                }
+            }
+            configure<org.checkerframework.gradle.plugin.CheckerFrameworkExtension> {
+                applyToSubprojects = false
+                skipVersionCheck = true
+                // See https://checkerframework.org/manual/#introduction
+                checkers.add("org.checkerframework.checker.nullness.NullnessChecker")
+                checkers.add("org.checkerframework.checker.optional.OptionalChecker")
+                checkers.add("org.checkerframework.checker.regex.RegexChecker")
+            }
         }
 
         tasks {
