@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Type;
 import java.util.Objects;
 
@@ -44,7 +46,7 @@ public class BinaryExpression extends Expression {
     return visitor.visit(this, expression0, expression1);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
@@ -88,8 +90,7 @@ public class BinaryExpression extends Expression {
         throw cannotEvaluate();
       }
     case Equal:
-      return expression0.evaluate(evaluator)
-          .equals(expression1.evaluate(evaluator));
+      return Objects.equals(expression0.evaluate(evaluator), expression1.evaluate(evaluator));
     case GreaterThan:
       switch (primitive) {
       case INT:
@@ -241,7 +242,7 @@ public class BinaryExpression extends Expression {
     return ((Number) expression.evaluate(evaluator)).doubleValue();
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

@@ -16,12 +16,14 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Node visitor.
  *
  * @param <R> Return type
  */
-public interface Visitor<R> {
+public interface Visitor<@Nullable R> {
   R visit(BinaryExpression binaryExpression);
   R visit(BlockStatement blockStatement);
   R visit(ClassDeclaration classDeclaration);

@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -66,11 +68,11 @@ public class ClassDeclaration extends MemberDeclaration {
     return shuttle.visit(this, members1);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

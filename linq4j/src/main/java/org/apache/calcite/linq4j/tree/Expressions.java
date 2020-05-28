@@ -26,6 +26,8 @@ import org.apache.calcite.linq4j.function.Predicate2;
 
 import com.google.common.collect.ImmutableList;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -283,7 +285,7 @@ public abstract class Expressions {
    * Creates a BlockExpression that contains the given expressions,
    * has no variables and has specific result type.
    */
-  public static BlockStatement block(Type type,
+  public static BlockStatement block(@Nullable Type type,
       Iterable<? extends Statement> expressions) {
     List<Statement> list = toList(expressions);
     if (type == null) {
@@ -561,7 +563,7 @@ public abstract class Expressions {
    * Creates a ConstantExpression that has the Value and Type
    * properties set to the specified values.
    */
-  public static ConstantExpression constant(Object value, Type type) {
+  public static ConstantExpression constant(@Nullable Object value, Type type) {
     if (value != null && type instanceof Class) {
       // Fix up value so that it matches type.
       Class clazz = (Class) type;
@@ -839,7 +841,7 @@ public abstract class Expressions {
   /**
    * Creates a MemberExpression that represents accessing a field.
    */
-  public static MemberExpression field(Expression expression,
+  public static MemberExpression field(@Nullable Expression expression,
       PseudoField field) {
     return makeMemberAccess(expression, field);
   }
@@ -857,7 +859,7 @@ public abstract class Expressions {
   /**
    * Creates a MemberExpression that represents accessing a field.
    */
-  public static MemberExpression field(Expression expression, Type type,
+  public static MemberExpression field(@Nullable Expression expression, Type type,
       String fieldName) {
     PseudoField field = Types.getField(fieldName, type);
     return makeMemberAccess(expression, field);
@@ -1384,7 +1386,7 @@ public abstract class Expressions {
    */
   public static ForStatement for_(
       Iterable<? extends DeclarationStatement> declarations,
-      Expression condition, Expression post, Statement body) {
+      @Nullable Expression condition, @Nullable Expression post, Statement body) {
     return new ForStatement(toList(declarations), condition, post, body);
   }
 
@@ -1393,7 +1395,7 @@ public abstract class Expressions {
    */
   public static ForStatement for_(
       DeclarationStatement declaration,
-      Expression condition, Expression post, Statement body) {
+      @Nullable Expression condition, @Nullable Expression post, Statement body) {
     return new ForStatement(Collections.singletonList(declaration), condition,
         post, body);
   }
@@ -1585,7 +1587,7 @@ public abstract class Expressions {
   /**
    * Creates a MemberExpression that represents accessing a field.
    */
-  public static MemberExpression makeMemberAccess(Expression expression,
+  public static MemberExpression makeMemberAccess(@Nullable Expression expression,
       PseudoField member) {
     return new MemberExpression(expression, member);
   }
@@ -1631,7 +1633,7 @@ public abstract class Expressions {
    * method, by calling the appropriate factory method.
    */
   public static UnaryExpression makeUnary(ExpressionType expressionType,
-      Expression expression, Type type, Method method) {
+      Expression expression, Type type, @Nullable Method method) {
     assert type != null;
     return new UnaryExpression(expressionType, type, expression);
   }
@@ -1917,7 +1919,8 @@ public abstract class Expressions {
    */
   public static UnaryExpression negateChecked(Expression expression,
       Method method) {
-    return makeUnary(ExpressionType.NegateChecked, expression, null, method);
+    throw new UnsupportedOperationException("not implemented");
+    //return makeUnary(ExpressionType.NegateChecked, expression, null, method);
   }
 
   /**
@@ -2509,13 +2512,13 @@ public abstract class Expressions {
    * Creates a GotoExpression representing a return statement. The
    * value passed to the label upon jumping can be specified.
    */
-  public static GotoStatement return_(LabelTarget labelTarget,
-      Expression expression) {
+  public static GotoStatement return_(@Nullable LabelTarget labelTarget,
+      @Nullable Expression expression) {
     return makeGoto(GotoExpressionKind.Return, labelTarget, expression);
   }
 
   public static GotoStatement makeGoto(GotoExpressionKind kind,
-      LabelTarget labelTarget, Expression expression) {
+      @Nullable LabelTarget labelTarget, @Nullable Expression expression) {
     return new GotoStatement(kind, labelTarget, expression);
   }
 
@@ -2959,7 +2962,7 @@ public abstract class Expressions {
   /**
    * Creates a statement that executes an expression.
    */
-  public static Statement statement(Expression expression) {
+  public static Statement statement(@Nullable Expression expression) {
     return new GotoStatement(GotoExpressionKind.Sequence, null, expression);
   }
 
@@ -3116,14 +3119,14 @@ public abstract class Expressions {
     return toCollection(iterable).toArray(a);
   }
 
-  static <T extends Expression> Expression accept(T node, Shuttle shuttle) {
+  static <T extends Expression> Expression accept(@Nullable T node, Shuttle shuttle) {
     if (node == null) {
       return null;
     }
     return node.accept(shuttle);
   }
 
-  static <T extends Statement> Statement accept(T node, Shuttle shuttle) {
+  static <T extends Statement> Statement accept(@Nullable T node, Shuttle shuttle) {
     if (node == null) {
       return null;
     }
@@ -3187,7 +3190,7 @@ public abstract class Expressions {
   }
 
   static List<MemberDeclaration> acceptMemberDeclarations(
-      List<MemberDeclaration> memberDeclarations, Shuttle shuttle) {
+      @Nullable List<MemberDeclaration> memberDeclarations, Shuttle shuttle) {
     if (memberDeclarations == null || memberDeclarations.isEmpty()) {
       return memberDeclarations; // short cut
     }

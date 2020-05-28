@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -43,7 +45,7 @@ public class IndexExpression extends Expression {
     return shuttle.visit(this, array, indexExpressions);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
@@ -52,7 +54,7 @@ public class IndexExpression extends Expression {
     writer.list("[", ", ", "]", indexExpressions);
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

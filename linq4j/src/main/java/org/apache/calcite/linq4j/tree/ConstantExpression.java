@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -32,9 +34,9 @@ import java.util.stream.Collectors;
  * Represents an expression that has a constant value.
  */
 public class ConstantExpression extends Expression {
-  public final Object value;
+  public final @Nullable Object value;
 
-  public ConstantExpression(Type type, Object value) {
+  public ConstantExpression(Type type, @Nullable Object value) {
     super(ExpressionType.Constant, type);
     this.value = value;
     if (value != null) {
@@ -54,7 +56,7 @@ public class ConstantExpression extends Expression {
     }
   }
 
-  public Object evaluate(Evaluator evaluator) {
+  public @Nullable Object evaluate(Evaluator evaluator) {
     return value;
   }
 
@@ -62,7 +64,7 @@ public class ConstantExpression extends Expression {
     return shuttle.visit(this);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
@@ -77,7 +79,7 @@ public class ConstantExpression extends Expression {
   }
 
   private static ExpressionWriter write(ExpressionWriter writer,
-      final Object value, Type type) {
+      final Object value, @Nullable Type type) {
     if (value == null) {
       return writer.append("null");
     }
@@ -328,7 +330,7 @@ public class ConstantExpression extends Expression {
     buf.append('"');
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     // REVIEW: Should constants with the same value and different type
     // (e.g. 3L and 3) be considered equal.
     if (this == o) {

@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -381,7 +383,7 @@ public class OptimizeShuttle extends Shuttle {
    * Returns whether an expression always evaluates to true or false.
    * Assumes that expression has already been optimized.
    */
-  private static Boolean always(Expression x) {
+  private static @Nullable Boolean always(Expression x) {
     if (x.equals(FALSE_EXPR) || x.equals(BOXED_FALSE_EXPR)) {
       return Boolean.FALSE;
     }

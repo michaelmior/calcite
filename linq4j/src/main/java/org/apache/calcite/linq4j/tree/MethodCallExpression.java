@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -28,7 +30,7 @@ import java.util.Objects;
  */
 public class MethodCallExpression extends Expression {
   public final Method method;
-  public final Expression targetExpression; // null for call to static method
+  public final @Nullable Expression targetExpression; // null for call to static method
   public final List<Expression> expressions;
   /**
    * Cache the hash code for the expression
@@ -36,7 +38,7 @@ public class MethodCallExpression extends Expression {
   private int hash;
 
   MethodCallExpression(Type returnType, Method method,
-      Expression targetExpression, List<Expression> expressions) {
+      @Nullable Expression targetExpression, List<Expression> expressions) {
     super(ExpressionType.Call, returnType);
     assert expressions != null : "expressions should not be null";
     assert method != null : "method should not be null";
@@ -48,7 +50,7 @@ public class MethodCallExpression extends Expression {
     this.expressions = expressions;
   }
 
-  MethodCallExpression(Method method, Expression targetExpression,
+  MethodCallExpression(Method method, @Nullable Expression targetExpression,
       List<Expression> expressions) {
     this(method.getReturnType(), method, targetExpression, expressions);
   }
@@ -62,11 +64,11 @@ public class MethodCallExpression extends Expression {
     return shuttle.visit(this, targetExpression, expressions);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
-  @Override public Object evaluate(Evaluator evaluator) {
+  @Override public @Nullable Object evaluate(Evaluator evaluator) {
     final Object target;
     if (targetExpression == null) {
       target = null;
@@ -107,7 +109,7 @@ public class MethodCallExpression extends Expression {
     writer.append(')');
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

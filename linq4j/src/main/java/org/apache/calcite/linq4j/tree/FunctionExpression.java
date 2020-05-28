@@ -22,6 +22,8 @@ import org.apache.calcite.linq4j.function.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -38,8 +40,8 @@ import java.util.Objects;
  */
 public final class FunctionExpression<F extends Function<?>>
     extends LambdaExpression {
-  public final F function;
-  public final BlockStatement body;
+  public final @Nullable F function;
+  public final @Nullable BlockStatement body;
   public final List<ParameterExpression> parameterList;
   private F dynamicFunction;
   /**
@@ -47,7 +49,7 @@ public final class FunctionExpression<F extends Function<?>>
    */
   private int hash;
 
-  private FunctionExpression(Class<F> type, F function, BlockStatement body,
+  private FunctionExpression(Class<F> type, @Nullable F function, @Nullable BlockStatement body,
       List<ParameterExpression> parameterList) {
     super(ExpressionType.Lambda, type);
     assert type != null : "type should not be null";
@@ -74,7 +76,7 @@ public final class FunctionExpression<F extends Function<?>>
     return shuttle.visit(this, body);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
@@ -227,7 +229,7 @@ public final class FunctionExpression<F extends Function<?>>
     return null;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

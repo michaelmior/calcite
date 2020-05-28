@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Represents a dynamic operation.
  */
@@ -28,7 +30,7 @@ public class DynamicExpression extends Expression {
     return shuttle.visit(this);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 

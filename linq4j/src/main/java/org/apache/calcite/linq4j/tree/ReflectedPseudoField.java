@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
@@ -42,7 +44,7 @@ public class ReflectedPseudoField implements PseudoField {
     return field.getModifiers();
   }
 
-  public Object get(Object o) throws IllegalAccessException {
+  public @Nullable Object get(Object o) throws IllegalAccessException {
     return field.get(o);
   }
 
@@ -50,7 +52,7 @@ public class ReflectedPseudoField implements PseudoField {
     return field.getDeclaringClass();
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Represents a control expression that handles multiple selections by passing
  * control to {@link SwitchCase}.
@@ -29,7 +31,7 @@ public class SwitchStatement extends Statement {
     return shuttle.visit(this);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 

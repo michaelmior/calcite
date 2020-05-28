@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Describes a lambda expression. This captures a block of code that is similar
  * to a Java method body.
@@ -29,7 +31,7 @@ public class LambdaExpression extends Expression {
     return shuttle.visit(this);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 

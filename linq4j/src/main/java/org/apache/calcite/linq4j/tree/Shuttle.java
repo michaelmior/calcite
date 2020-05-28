@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -78,8 +80,8 @@ public class Shuttle {
   }
 
   public ForStatement visit(ForStatement forStatement,
-      List<DeclarationStatement> declarations, Expression condition,
-      Expression post, Statement body) {
+      List<DeclarationStatement> declarations, @Nullable Expression condition,
+      @Nullable Expression post, Statement body) {
     return declarations.equals(forStatement.declarations)
         && condition == forStatement.condition
         && post == forStatement.post
@@ -216,7 +218,7 @@ public class Shuttle {
   }
 
   public Expression visit(MemberExpression memberExpression,
-      Expression expression) {
+      @Nullable Expression expression) {
     return memberExpression.expression == expression
         ? memberExpression
         : Expressions.field(expression, memberExpression.field);

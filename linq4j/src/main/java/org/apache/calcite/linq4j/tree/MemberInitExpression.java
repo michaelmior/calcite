@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Represents calling a constructor and initializing one or more members of the
  * new object.
@@ -29,7 +31,7 @@ public class MemberInitExpression extends Expression {
     return shuttle.visit(this);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 

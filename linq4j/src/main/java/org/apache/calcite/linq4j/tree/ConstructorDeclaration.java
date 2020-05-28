@@ -18,6 +18,8 @@ package org.apache.calcite.linq4j.tree;
 
 import com.google.common.collect.Lists;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -54,7 +56,7 @@ public class ConstructorDeclaration extends MemberDeclaration {
     return shuttle.visit(this, body);
   }
 
-  public <R> R accept(Visitor<R> visitor) {
+  public <@Nullable R> R accept(Visitor<R> visitor) {
     return visitor.visit(this);
   }
 
@@ -78,7 +80,7 @@ public class ConstructorDeclaration extends MemberDeclaration {
     writer.newlineAndIndent();
   }
 
-  @Override public boolean equals(Object o) {
+  @Override public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

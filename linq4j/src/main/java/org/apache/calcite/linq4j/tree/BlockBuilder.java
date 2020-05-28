@@ -16,6 +16,8 @@
  */
 package org.apache.calcite.linq4j.tree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class BlockBuilder {
       new HashMap<>();
 
   private final boolean optimizing;
-  private final BlockBuilder parent;
+  private final @Nullable BlockBuilder parent;
 
   private static final Shuttle OPTIMIZE_SHUTTLE = new OptimizeShuttle();
 
@@ -66,7 +68,7 @@ public class BlockBuilder {
    *
    * @param optimizing Whether to eliminate common sub-expressions
    */
-  public BlockBuilder(boolean optimizing, BlockBuilder parent) {
+  public BlockBuilder(boolean optimizing, @Nullable BlockBuilder parent) {
     this.optimizing = optimizing;
     this.parent = parent;
   }
@@ -85,7 +87,7 @@ public class BlockBuilder {
    * (possibly a variable) that represents the result of the newly added
    * block.
    */
-  public Expression append(String name, BlockStatement block) {
+  public @Nullable Expression append(String name, BlockStatement block) {
     return append(name, block, true);
   }
 
@@ -99,7 +101,7 @@ public class BlockBuilder {
    * a variable. Do not do this if the expression has
    * side-effects or a time-dependent value.
    */
-  public Expression append(String name, BlockStatement block,
+  public @Nullable Expression append(String name, BlockStatement block,
       boolean optimize) {
     if (statements.size() > 0) {
       Statement lastStatement = statements.get(statements.size() - 1);
@@ -184,7 +186,7 @@ public class BlockBuilder {
   /**
    * Appends an expression to a list of statements, if it is not null.
    */
-  public Expression appendIfNotNull(String name, Expression expression) {
+  public @Nullable Expression appendIfNotNull(String name, @Nullable Expression expression) {
     if (expression == null) {
       return null;
     }
@@ -283,7 +285,7 @@ public class BlockBuilder {
    * @param expr expression to test
    * @return existing ParameterExpression or null
    */
-  public DeclarationStatement getComputedExpression(Expression expr) {
+  public @Nullable DeclarationStatement getComputedExpression(Expression expr) {
     if (parent != null) {
       DeclarationStatement decl = parent.getComputedExpression(expr);
       if (decl != null) {
