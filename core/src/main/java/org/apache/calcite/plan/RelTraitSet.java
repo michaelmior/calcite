@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.annotation.CheckReturnValue;
 
 /**
  * RelTraitSet represents an ordered set of {@link RelTrait}s.
@@ -159,6 +160,7 @@ public final class RelTraitSet extends AbstractList<RelTrait> {
    * @param trait the new RelTrait
    * @return the old RelTrait at the index
    */
+  @CheckReturnValue
   public RelTraitSet replace(int index, RelTrait trait) {
     assert traits[index].getTraitDef() == trait.getTraitDef()
         : "RelTrait has different RelTraitDef than replacement";
@@ -182,6 +184,7 @@ public final class RelTraitSet extends AbstractList<RelTrait> {
    * @return New set
    * @see #plus(RelTrait)
    */
+  @CheckReturnValue
   public RelTraitSet replace(
       RelTrait trait) {
     // Quick check for common case
