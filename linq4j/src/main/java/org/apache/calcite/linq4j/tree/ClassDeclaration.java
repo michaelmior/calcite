@@ -69,6 +69,7 @@ public class ClassDeclaration extends MemberDeclaration {
   }
 
   public <@Nullable R> R accept(Visitor<R> visitor) {
+    Objects.requireNonNull(visitor);
     return visitor.visit(this);
   }
 

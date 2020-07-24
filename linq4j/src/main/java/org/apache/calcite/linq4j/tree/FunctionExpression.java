@@ -105,6 +105,8 @@ public final class FunctionExpression<F extends Function<?>>
   }
 
   @Override void accept(ExpressionWriter writer, int lprec, int rprec) {
+    assert body != null;
+
     // "new Function1() {
     //    public Result apply(T1 p1, ...) {
     //        <body>
@@ -216,7 +218,7 @@ public final class FunctionExpression<F extends Function<?>>
     return abstractMethod.getName();
   }
 
-  private Method getAbstractMethod() {
+  private @Nullable Method getAbstractMethod() {
     if (type instanceof Class
         && ((Class) type).isInterface()) {
       final List<Method> declaredMethods =

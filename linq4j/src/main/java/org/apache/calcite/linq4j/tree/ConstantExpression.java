@@ -277,7 +277,7 @@ public class ConstantExpression extends Expression {
     return writer.append(end);
   }
 
-  private static Constructor matchingConstructor(Object value) {
+  private static @Nullable Constructor matchingConstructor(Object value) {
     final Field[] fields = value.getClass().getFields();
     for (Constructor<?> constructor : value.getClass().getConstructors()) {
       if (argsMatchFields(fields, constructor.getParameterTypes())) {

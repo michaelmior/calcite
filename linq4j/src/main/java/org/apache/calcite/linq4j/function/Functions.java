@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.RandomAccess;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Utilities relating to functions.
  */
@@ -494,6 +496,7 @@ public abstract class Functions {
     private final Function1<T, T2> selector;
 
     SelectorEqualityComparer(Function1<T, T2> selector) {
+      Objects.requireNonNull(selector);
       this.selector = selector;
     }
 
@@ -588,15 +591,15 @@ public abstract class Functions {
    * @param <T1> second argument type */
   private static final class Ignore<R, T0, T1>
       implements Function0<R>, Function1<T0, R>, Function2<T0, T1, R> {
-    public R apply() {
+    public @Nullable R apply() {
       return null;
     }
 
-    public R apply(T0 p0) {
+    public @Nullable R apply(T0 p0) {
       return null;
     }
 
-    public R apply(T0 p0, T1 p1) {
+    public @Nullable R apply(T0 p0, T1 p1) {
       return null;
     }
 

@@ -18,6 +18,8 @@ package org.apache.calcite.linq4j;
 
 import java.util.Arrays;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Contains the State and changes internally.
  * with the {@link #create()} method one can get immutable Snapshots.
@@ -30,7 +32,7 @@ public class MemoryFactory<E> {
   // Index:      0   1   2   3   4
   // Idea       -2  -1   0  +1  +2
   ModularInteger offset;
-  private Object[] values;
+  private @Nullable Object[] values;
 
   public MemoryFactory(int history, int future) {
     this.history = history;
@@ -39,7 +41,7 @@ public class MemoryFactory<E> {
     this.offset = new ModularInteger(0, history + future + 1);
   }
 
-  public void add(E current) {
+  public void add(@Nullable E current) {
     values[offset.get()] = current;
     this.offset = offset.plus(1);
   }
@@ -80,7 +82,7 @@ public class MemoryFactory<E> {
       return get(0);
     }
 
-    public E get(int position) {
+    public @Nullable E get(int position) {
       if (position < 0 && position < -1 * history) {
         throw new IllegalArgumentException("History can only go back " + history
             + " points in time, you wanted " + Math.abs(position));

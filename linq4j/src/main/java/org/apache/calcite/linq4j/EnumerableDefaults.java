@@ -67,6 +67,8 @@ import static org.apache.calcite.linq4j.Linq4j.CollectionEnumerable;
 import static org.apache.calcite.linq4j.Linq4j.ListEnumerable;
 import static org.apache.calcite.linq4j.function.Functions.adapt;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Default implementations of methods in the {@link Enumerable} interface.
  */
@@ -75,7 +77,7 @@ public abstract class EnumerableDefaults {
   /**
    * Applies an accumulator function over a sequence.
    */
-  public static <TSource> TSource aggregate(Enumerable<TSource> source,
+  public static @Nullable <TSource> TSource aggregate(Enumerable<TSource> source,
       Function2<TSource, TSource, TSource> func) {
     TSource result = null;
     try (Enumerator<TSource> os = source.enumerator()) {
@@ -347,7 +349,7 @@ public abstract class EnumerableDefaults {
     try (Enumerator<TSource> os = enumerable.enumerator()) {
       while (os.moveNext()) {
         TSource o = os.current();
-        if (o.equals(element)) {
+        if (o != null && o.equals(element)) {
           return true;
         }
       }
@@ -403,14 +405,14 @@ public abstract class EnumerableDefaults {
    */
   public static <TSource> Enumerable<TSource> defaultIfEmpty(
       Enumerable<TSource> enumerable,
-      TSource value) {
+      @Nullable TSource value) {
     try (Enumerator<TSource> os = enumerable.enumerator()) {
       if (os.moveNext()) {
         return Linq4j.asEnumerable(() -> new Iterator<TSource>() {
 
           private boolean nonFirst;
 
-          private Iterator<TSource> rest;
+          private @Nullable Iterator<TSource> rest;
 
           public boolean hasNext() {
             return !nonFirst || rest.hasNext();

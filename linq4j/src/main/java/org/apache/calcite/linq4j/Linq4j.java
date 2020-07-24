@@ -28,6 +28,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.RandomAccess;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Utility and factory methods for Linq4j.
  */
@@ -647,7 +649,7 @@ public abstract class Linq4j {
   private static class SingletonNullEnumerator<E> implements Enumerator<E> {
     int i = 0;
 
-    public E current() {
+    public @Nullable E current() {
       return null;
     }
 
